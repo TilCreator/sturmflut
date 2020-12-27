@@ -78,10 +78,15 @@ int net_frame_to_net_frame(struct net_frame* ret, struct img_frame* src, unsigne
 				max_print_size = data_alloc_size - offset;
 				effective_x = pixel.x + offset_x;
 				effective_y = pixel.y + offset_y;
-				if(monochrome)
+				if(monochrome) {
 					print_size = snprintf(data + offset, data_alloc_size - offset, "PX %u %u %u\n", effective_x, effective_y, !!pixel.abgr);
-				else
-					print_size = snprintf(data + offset, data_alloc_size - offset, "PX %u %u %08x\n", effective_x, effective_y, pixel.abgr);
+				} else {
+					if(pixel.color.alpha == 255) {
+						print_size = snprintf(data + offset, data_alloc_size - offset, "PX %u %u %06x\n", effective_x, effective_y, (pixel.abgr >> 8));
+					} else {
+						print_size = snprintf(data + offset, data_alloc_size - offset, "PX %u %u %08x\n", effective_x, effective_y, pixel.abgr);
+					}
+				}
 				if(print_size < 0) {
 					err = -EINVAL;
 					goto fail_data_alloc;
